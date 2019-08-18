@@ -1,0 +1,48 @@
+INSTALLING MOD_JK ON APACHE WEBSERVER (EC1)
+
+I) ON APACHE WEBSERVER - DOWNLOAD THE MOD_JK MODULE
+
+cd /etc/httpd/modules
+
+wget https://archive.apache.org/dist/tomcat/tomcat-connectors/jk/binaries/linux/jk-1.2.31/x86_64/mod_jk-1.2.31-httpd-2.2.x.so
+
+RENAME THE MODULE
+
+# cd /etc/httpd/modules
+# mv mod_jk-1.2.31-httpd-2.2.x.so mod_jk.so
+# chmod +x mod_jk.so
+
+II) vi httpd.conf (/etc/httpd/conf) 
+	LoadModule jk_module modules/mod_jk.so
+
+III) configure the mod_jk in (vi httpd.conf)
+
+JkWorkersFile /etc/httpd/conf/workers.properties
+JkShmFile     /etc/httpd/conf/mod_jk.shm
+JkLogFile     /etc/httpd/conf/mod_jk.log
+JkLogLevel    info
+JkLogStampFormat "[%a %b %d %H:%M:%S %Y]"
+JkMount  /examples/* loadbalancer
+
+Please Note: In multi tomcat instance location it has to mount on loadbalancer 
+
+IV) CREATE WORKERS PROPERTIES FILE
+
+# vi /etc/httpd/conf/workers.properties
+
+worker.list=worker1,worker2,loadbalancer
+
+worker.worker1.type=ajp13
+worker.worker1.host=13.127.63.152
+worker.worker1.port=8009
+
+worker.worker2.type=ajp13
+worker.worker2.host=35.154.18.65
+worker.worker2.port=8009
+
+worker.loadbalancer.type=lb
+worker.loadbalancer.balance_workers=worker1,worker2
+
+Note: Please change the IP addresses.
+
+V) RESTART THE APACHE
